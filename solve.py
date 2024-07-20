@@ -1,5 +1,6 @@
 from board import *
 import copy
+import heapq
 
 num_expand = 0
 
@@ -32,6 +33,27 @@ def a_star(init_board, hfn):
     :rtype: List[State], int
     """
     #TODO
+    # implement multipath pruning
+    seen = {}
+    #initilize the init state
+    initial_state = State(board=init_board, hfn=hfn, f=0, depth=0)
+
+    heap = []
+    heapq.heappush(heap, (initial_state.f, initial_state)) # we will use initial_state.f to compare the minimum
+    seen[initial_state.id] = initial_state.f
+    while heap:
+        # pop the node with the minimum f-value from the priority queue
+        min_f_state = heapq.heappop(heap)[1] # only the state 
+        if is_goal(min_f_state):
+            return get_path(min_f_state), min_f_state.f
+        for state in get_successors(min_f_state):
+            state.f = state.depth + hfn(state.board) # cost + h
+            if state.id not in seen or state.f < seen[state.id]:
+                heapq.heappush(heap, (state.f, state))
+                seen[state.id] = state.f
+    return [], -1
+    # use a heap to add neighbours and get min value
+
 
 def dfs(init_board):
     """
@@ -47,7 +69,41 @@ def dfs(init_board):
     :return: (the path to goal state, solution cost)
     :rtype: List[State], int
     """
+    # break ties by using the states ID's values
+    # use multipruning search
+    # At each step, DFS will add the successors to the
+    # frontier in decreasing order of their IDs. In other words, DFS will expand the state with
+    # the smallest ID value among the successors
     #TODO
+    # implement multipath pruning
+    seen = set()
+    #initilize the init state
+    initial_state = State(board=init_board, hfn=zero_heuristic, f=0, depth=0)
+
+    # Create a stack for DFS 
+    stack = []
+
+    stack.append(initial_state)
+
+    while len(stack):
+        # pop from the stack the state
+        current_state = stack.pop()
+
+        if is_goal(current_state):
+            return get_path(current_state), current_state.depth
+
+        # if not, get successor and continue 
+
+        # if not, get successors and continue
+        successors = get_successors(current_state)
+        successors.sort(key=lambda s: s.id, reverse=True)  # decreasing order by id
+
+        for successor in successors:
+            successor.f = successor.depth
+            if successor.id not in seen:
+                stack.append(successor)
+                seen.add(successor.id)
+    return [], -1
 
 
 def get_successors(state):
@@ -61,7 +117,58 @@ def get_successors(state):
     :rtype: List[State]
     """
     #TODO
-    
+    successors = []
+
+    for car in state.board.cars: #iterate over all cars of the boards
+        if car.orientation == 'h': # horizontal can move left or right
+            # try to move left
+            if car.var_coord > 0 and state.board.grid[car.fix_coord][car.var_coord - 1] == '.':
+                new_board = move_car(state.board, car, -1)
+                new_state = State(board=new_board, hfn=state.hfn, f=state.depth + 1 + state.hfn(new_board), depth=state.depth + 1, parent=state)
+                successors.append(new_state)
+
+            #try to move right
+            if car.var_coord + car.length < state.board.size and state.board.grid[car.fix_coord][car.var_coord + car.length] == '.':
+                new_board = move_car(state.board, car, +1)
+                new_state = State(board=new_board, hfn=state.hfn, f=state.depth + 1 + state.hfn(new_board), depth=state.depth + 1, parent=state)
+                successors.append(new_state)
+
+        elif car.orientation == 'v':
+            
+             # try to move up
+            if car.var_coord > 0 and state.board.grid[car.var_coord - 1][car.fix_coord] == '.':
+                new_board = move_car(state.board, car, -1)
+                new_state = State(board=new_board, hfn=state.hfn, f=state.depth + 1 + state.hfn(new_board), depth=state.depth + 1, parent=state)
+                successors.append(new_state)
+
+            #try to move down
+            if car.var_coord + car.length < state.board.size and state.board.grid[car.var_coord + car.length][car.fix_coord] == '.':
+                new_board = move_car(state.board, car, +1)
+                new_state = State(board=new_board, hfn=state.hfn, f=state.depth + 1 + state.hfn(new_board), depth=state.depth + 1, parent=state)
+                successors.append(new_state)
+
+    return successors
+
+
+def move_car(board: Board, car: Car, move: int) -> Board:
+    """
+    Helper function implemented
+    Return a new board with the given car moved by the given amount.
+    """
+    #TODO
+    new_cars = []
+
+    for c in board.cars:
+        if c == car:
+            if car.orientation == 'h':
+                new_cars.append(Car(coord_x=car.var_coord + move, coord_y=car.fix_coord, orientation=car.orientation, length=car.length, is_goal=car.is_goal))
+            elif car.orientation == 'v':
+                new_cars.append(Car(coord_x=car.fix_coord, coord_y=car.var_coord + move, orientation=car.orientation, length=car.length, is_goal=car.is_goal))
+        else:
+            new_cars.append(c)
+
+    new_board = Board(name=board.name, size=board.size, cars=new_cars)
+    return new_board
 
 
 def is_goal(state):
@@ -121,13 +228,13 @@ def advanced_heuristic(board):
     #TODO
 
 def main():
-    boards = from_file("C:/Users/karal/Documents/School/3b/CS 486/a1_files/code_posted/jams_posted.txt")
+    boards = from_file("https://github.com/jadechoghari/AI-UnblockMe/blob/main/jams_posted.txt")
     
     global num_expand
     
-    print("\t\t|Advanced\t\t|Blocking\t\t|Advanced");
-    print("Maze No.\t|Length\t|Expansion\t|Length\t|Expansion\t|Does Better");
-    print("----------------+-------+---------------+-------+---------------+-----------------------");
+    print("\t\t|Advanced\t\t|Blocking\t\t|Advanced")
+    print("Maze No.\t|Length\t|Expansion\t|Length\t|Expansion\t|Does Better")
+    print("----------------+-------+---------------+-------+---------------+-----------------------")
         
     for j in range(42):
         i = j
