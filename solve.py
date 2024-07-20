@@ -180,8 +180,20 @@ def is_goal(state):
     :return: True or False
     :rtype: bool
     """
+
+    """
+    • The puzzle must be on a 6 x 6 grid.
+    • The goal car is in row 2 and it has a length of 2.
+    • Besides the goal car, there is no other horizontal car in row 2.
+    """
     #TODO
-    return exit
+    cars = state.board.cars
+    for car in cars:
+        if car.is_goal:
+            if car.var_coord + car.length - 1 == 5:
+                return True
+            return False
+
 
 
 def get_path(state):
@@ -195,7 +207,11 @@ def get_path(state):
     :rtype: List[State]
     """
     #TODO
-    return exit
+    path = [state]
+    while (state.parent != None):
+        path.insert(0, state.parent) #list.insert(pos, elmnt)
+        state = state.parent
+    return path
 
 
 def blocking_heuristic(board):
@@ -213,8 +229,36 @@ def blocking_heuristic(board):
     :rtype: int
     """
     #TODO
-    return exit
+    """
+    1- Identify the goal car
+    2- Check if the goal car is at the exit - the heuristic value is zero
+    3- Count blocking cars
+    """
 
+    goal_row = 2
+    goal_car_length = 2
+
+    # we are assuming the goal car is horizontal
+    goal_car_pos = None
+    for car in board.cars:
+        if car.is_goal:
+            goal_car_pos = car.var_coord
+            break
+
+    if goal_car_pos is None:
+        raise ValueError("No goal car found on the board")
+    
+    # check if the goal car is already at the exit
+    if goal_car_pos + goal_car_length == board.size:
+        return 0
+    
+    # count the number of cars blocking the car's path - will be in same row 
+    count = 0
+    for col in range(goal_car_pos + goal_car_length, board.size):
+        if board.grid[goal_row][col] != '.':
+            count += 1
+
+    return 1 + count
 
 def advanced_heuristic(board):
     """
@@ -226,6 +270,58 @@ def advanced_heuristic(board):
     :rtype: int
     """
     #TODO
+    goal_row = 2
+    goal_car_length = 2
+    # track columns with primary blockers
+    primary_blocked_columns = set()
+
+    # we are assuming the goal car is horizontal
+    goal_car_pos = None
+    for car in board.cars:
+        if car.is_goal:
+            goal_car_pos = car.var_coord
+            break
+
+    if goal_car_pos is None:
+        raise ValueError("No goal car found on the board")
+    
+    # check if the goal car is already at the exit
+    if goal_car_pos + goal_car_length == board.size:
+        return 0
+    
+    # init the advanced heuristic param
+    blocking_cars_count = 0
+    total_distance = 0
+    secondary_blocking_count = 0
+
+    # check each column to the right of the goal car
+    for col in range(goal_car_pos + goal_car_length, board.size):
+        if board.grid[goal_row][col] != '.':
+            blocking_cars_count += 1
+            total_distance += (col - (goal_car_pos + goal_car_length))
+            primary_blocked_columns.add(col)
+
+    # check for secondary blockers in relevant rows and columns
+    
+    for car in board.cars:
+        # for vertical cars we check if they block any of the columns identified as blocked by primary blockers
+        if car.orientation == 'v':
+            for col in primary_blocked_columns:
+                if car.var_coord == col and car.fix_coord <= goal_row < car.fix_coord + car.length:
+                    secondary_blocking_count += 1
+                    break  # no need to check other columns for this car
+                
+        # for horizontal cars we check if any part of the car's length overlaps with the blocked columns
+        elif car.orientation == 'h' and car.fix_coord == goal_row:
+            for col in range(car.var_coord, car.var_coord + car.length):
+                if col in primary_blocked_columns:
+                    secondary_blocking_count += 1
+                    break  # no need to check other columns for this car
+
+     # heuristic value calculation
+    heuristic_value = blocking_cars_count * 2 + total_distance + secondary_blocking_count * 2
+
+    return heuristic_value
 
 def main():
     boards = from_file("https://github.com/jadechoghari/AI-UnblockMe/blob/main/jams_posted.txt")
