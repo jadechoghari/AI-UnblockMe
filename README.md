@@ -1,23 +1,13 @@
-# Unblock Me
+# AI Unblock Me Solver
 
-Built an AI that solves the game of Unblock Me with the goal of optimizing the number of steps it takes.
+## Overview
+We are building an AI that can solve the popular puzzle game "Unblock Me." Our AI leverages advanced machine learning techniques to navigate the complexities of the game, providing efficient and optimal solutions.
 
-## Depth First Search
-DFS does not take costs into account. Its goal is to simply find a solution by expanding the most recently added successor.
+![DeepMind](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/DeepMind_new_logo.svg/2560px-DeepMind_new_logo.svg.png)
+## Relation to Google DeepMind
+This project is inspired by the breakthroughs made by Google DeepMind in solving complex problems with AI, such as their work on AlphaGo and reinforcement learning. Similar to DeepMind's approach, our AI will use sophisticated algorithms to understand and master the game of "Unblock Me."
 
-## A*
-In A*, we minimize the total cost and heuristic value when choosing a successor to expand from a frontier. This could ensure that we find our solution using minimum number of steps.
 
-### Cost Function
-The total cost is determined by number of steps it has taken.
-
-### Consistent Heuristic Function 1 - Number of cars blocking the exit plus 1
-At any state, it takes at least 1 step for us to decrease the number of blocking cars by 1, and at least 1 step for us to move the goal car to the exit. Therefore, by induction, it must take at least `m + 1` steps for us to remove `m` blocking cars and move the goal car to the exit at any states. Therefore, we know that this is a consistent heuristic function.
-
-### Consistent Heuristic Function 2 - Number of cars blocking the exit plus number of cars blocking the blocking cars plus 1
-What is different between this function and the previous function is that we are also adding one if there are cars under any blocking cars of length 3. This is because any blocking cars of length 3 must be moved to the bottom for the goal car to pass through. Like the above, it takes at least 1 step to remove all cars under blocking cars of length 3 at any state. Therefore, it is another consistent heuristic function. Furthermore, this function must give a value at least the value of the function 1. Therefore, this function dominates function 1.
-
-## Multi-Path Pruning
-To minimize the number repeating expansion, multi-path pruning is applied. Since our heuristic functions are consistent, multi-path pruning would not remove the solution that takes the least number of steps.
-
+## Get Involved
+We welcome contributions from the community. Whether you're a developer, researcher, or enthusiast, join us in creating an AI that pushes the boundaries of game-solving technology.
 

@@ -31,29 +31,7 @@ def a_star(init_board, hfn):
     :return: (the path to goal state, solution cost)
     :rtype: List[State], int
     """
-    init_state = State(init_board, hfn, hfn(init_board), 0)
-    frontier = [init_state]
-    explored = []
-    while (len(frontier) > 0):
-        s = frontier.pop()
-        l = len(explored)
-        in_exp = False
-        for i in range(l):
-            if s.board.__eq__(explored[i]):
-                in_exp = True
-        if not in_exp:
-            global num_expand
-            num_expand = num_expand + 1
-            explored.append(s.board)
-            if is_goal(s):
-                cost = s.depth
-                return get_path(s), cost
-            scs = get_successors(s)
-            frontier = frontier + scs
-            successors_par_id_desc(frontier)
-            successors_id_desc(frontier)
-            successors_f_desc(frontier)
-    return [], -1
+    #TODO
 
 def dfs(init_board):
     """
@@ -69,25 +47,7 @@ def dfs(init_board):
     :return: (the path to goal state, solution cost)
     :rtype: List[State], int
     """
-    init_state = State(init_board, zero_heuristic, zero_heuristic(init_board), 0)
-    frontier = [init_state]
-    explored = []
-    while (len(frontier) > 0):
-        s = frontier.pop()
-        l = len(explored)
-        in_exp = False
-        for i in range(l):
-            if s.board.__eq__(explored[i]):
-                in_exp = True
-        if not in_exp:
-            explored.append(s.board)
-            if is_goal(s):
-                cost = s.depth
-                return get_path(s), cost
-            scs = get_successors(s)
-            scs = successors_id_desc(scs)
-            frontier = frontier + scs
-    return [], -1
+    #TODO
 
 
 def get_successors(state):
@@ -100,65 +60,7 @@ def get_successors(state):
     :return: The list of successor states.
     :rtype: List[State]
     """
-    board = state.board
-    #           r = 0         r = 1         r = 2
-    occupied = [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]]
-
-    for car in board.cars:
-        if car.orientation == "v":
-            x_coord = car.fix_coord
-            y_coord = car.var_coord
-            for r in range(y_coord, y_coord + car.length):
-                occupied[r][x_coord] = 1
-        else:
-            x_coord = car.var_coord
-            y_coord = car.fix_coord
-            for c in range(x_coord, x_coord + car.length):
-                occupied[y_coord][c] = 1
-
-    ret = []            
-    hfn = state.hfn
-    curDepth = state.depth
-    l = len(board.cars)
-    for i in range(l):
-        if board.cars[i].orientation == "v":
-            y_coord = board.cars[i].var_coord
-            # direction 1
-            while((board.cars[i].var_coord > 0) and (occupied[board.cars[i].var_coord - 1][board.cars[i].fix_coord] == 0)):
-                board.cars[i].set_coord(board.cars[i].var_coord - 1)
-                newcars = copy.deepcopy(board.cars)
-                new_board = Board(board.name, board.size, newcars)
-                s = State(new_board, hfn, hfn(new_board), curDepth + 1, state)
-                ret.append(s)
-            board.cars[i].set_coord(y_coord)
-            # direction 2
-            while((board.cars[i].var_coord + board.cars[i].length - 1 < 5) and (occupied[board.cars[i].var_coord + board.cars[i].length][board.cars[i].fix_coord] == 0)):
-                board.cars[i].set_coord(board.cars[i].var_coord + 1)
-                newcars = copy.deepcopy(board.cars)
-                new_board = Board(board.name, board.size, newcars)            
-                s = State(new_board, hfn, hfn(new_board), curDepth + 1, state)
-                ret.append(s)  
-            board.cars[i].set_coord(y_coord)
-        else:
-            x_coord = board.cars[i].var_coord
-            # direction 1
-            while((board.cars[i].var_coord > 0) and (occupied[board.cars[i].fix_coord][board.cars[i].var_coord - 1] == 0)):
-                board.cars[i].set_coord(board.cars[i].var_coord - 1)
-                newcars = copy.deepcopy(board.cars)
-                new_board = Board(board.name, board.size, newcars)
-                s = State(new_board, hfn, hfn(new_board), curDepth + 1, state)
-                ret.append(s)
-            board.cars[i].set_coord(x_coord)
-            # direction 2
-            while((board.cars[i].var_coord + board.cars[i].length - 1 < 5) and (occupied[board.cars[i].fix_coord][board.cars[i].var_coord + board.cars[i].length] == 0)):
-                board.cars[i].set_coord(board.cars[i].var_coord + 1)
-                newcars = copy.deepcopy(board.cars)
-                new_board = Board(board.name, board.size, newcars)            
-                s = State(new_board, hfn, hfn(new_board), curDepth + 1, state)
-                ret.append(s)   
-            board.cars[i].set_coord(x_coord)
-    
-    return ret
+    #TODO
     
 
 
@@ -171,12 +73,8 @@ def is_goal(state):
     :return: True or False
     :rtype: bool
     """
-    cars = state.board.cars
-    for car in cars:
-        if car.is_goal:
-            if car.var_coord + car.length - 1 == 5:
-                return True
-            return False
+    #TODO
+    return exit
 
 
 def get_path(state):
@@ -189,11 +87,8 @@ def get_path(state):
     :return: The path.
     :rtype: List[State]
     """
-    path = [state]
-    while(state.parent != None):
-        path.insert(0,state.parent)
-        state = state.parent
-    return path
+    #TODO
+    return exit
 
 
 def blocking_heuristic(board):
@@ -210,26 +105,8 @@ def blocking_heuristic(board):
     :return: The heuristic value.
     :rtype: int
     """
-    goal_coord = 0
-    blockedCells = [0] * 6
-    
-    cars = board.cars
-    for car in cars:
-        if car.is_goal:
-            goal_coord = car.var_coord
-            if goal_coord == 4:
-                return 0;
-        else:
-            if car.orientation == "v":
-                for r in range(car.length):
-                    if car.var_coord + r == 2:
-                        blockedCells[car.fix_coord] = 1
-    
-    ret = 0;
-    for c in range(goal_coord,6):
-        ret = ret + blockedCells[c]
-
-    return ret + 1;
+    #TODO
+    return exit
 
 
 def advanced_heuristic(board):
