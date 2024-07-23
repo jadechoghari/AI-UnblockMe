@@ -324,6 +324,7 @@ def advanced_heuristic(board):
     return heuristic_value
 
 def main():
+    # launch from here
     boards = from_file("https://github.com/jadechoghari/AI-UnblockMe/blob/main/jams_posted.txt")
     
     global num_expand
